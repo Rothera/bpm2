@@ -43,7 +43,7 @@ def main(argv0, argv):
             bpm.json.dump_config(data, file, max_depth=3)
     else:
         css_filename = args.o or args.subreddit + ".css"
-        images_filename = args.i or args.subreddit + ".json"
+        images_filename = args.i or args.subreddit + "-images.json"
         css, images = bpm.reddit.download_stylesheet(args.subreddit)
         with open(css_filename, "w") as file:
             file.write(css)
