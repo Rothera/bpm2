@@ -23,6 +23,7 @@ import argparse
 import sys
 
 import bpm.css
+import bpm.extract
 import bpm.json
 import bpm.match
 
@@ -48,8 +49,10 @@ def dump_emote_selectors(rules, special_only):
         if selector is None:
             continue
 
-        if not special_only or selector.pclasses or selector.prefix or selector.suffix:
-            print(repr(selector))
+        if special_only and not (selector.pclasses or selector.prefix or selector.suffix):
+            continue
+
+        print(repr(selector))
 
 def dump_emote_specifiers(rules, special_only):
     for rule in rules:
@@ -71,6 +74,54 @@ def dump_emote_specifiers(rules, special_only):
         elif not special_only:
             print(selector.name)
 
+def dump_emote_groups(rules, special_only, collapse_rules):
+    emotes = bpm.extract.group_rules(rules)
+
+    for (name, parts) in emotes.items():
+        for (key, rules) in parts.items():
+            if special_only and not len(key):
+                continue
+
+            print("Emote:", name)
+
+            if key:
+                print("Key:", key)
+
+            if collapse_rules:
+                css = bpm.extract.collapse_rules(rules)
+                print("Properties:", css)
+            else:
+                for rule in rules:
+                    print("Rule:", rule)
+            print()
+
+def dump_emote_sprites(rules, special_only):
+    emotes = bpm.extract.group_rules(rules)
+
+    for (name, parts) in emotes.items():
+        for (key, rules) in parts.items():
+            if special_only and not len(key):
+                continue
+
+            css = bpm.extract.collapse_rules(rules)
+            sprite, css = bpm.extract.extract_sprite(name, css)
+
+            if sprite is not None:
+                bpm.extract.clean_css(css)
+
+                if key:
+                    print("%s %s: %s" % (name, key, sprite))
+                else:
+                    print("%s: %s" % (name, sprite))
+
+                if css:
+                    print("- CSS:", css)
+            else:
+                if key:
+                    print("%s %s: %s" % (name, key, css))
+                else:
+                    print("%s: %s" % (name, css))
+
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Parse stylesheet")
     parser.add_argument("--css", action="store_true", help="Dump text rules")
@@ -78,7 +129,11 @@ def main(argv0, argv):
     parser.add_argument("--css-json", action="store_true", help="Dump JSON rules")
     parser.add_argument("--emote-selectors", action="store_true", help="Dump emote selector matches")
     parser.add_argument("--emote-specs", action="store_true", help="Dump emote specifiers")
+    parser.add_argument("--emote-groups", action="store_true", help="Dump emote groups")
+    parser.add_argument("--emote-sprites", action="store_true", help="Dump emote sprites")
     parser.add_argument("--special", action="store_true", help="Print special emotes only")
+    parser.add_argument("--noignore", action="store_true", help="Disregard PONYSCRIPT-IGNORE directives")
+    parser.add_argument("--collapse", action="store_true", help="Collapse emote group rules")
     parser.add_argument("stylesheet", help="Stylesheet")
 
     args = parser.parse_args(argv)
@@ -87,6 +142,9 @@ def main(argv0, argv):
         css = file.read()
 
     rules = bpm.css.parse_stylesheet(css)
+
+    if not args.noignore:
+        rules = bpm.extract.filter_ponyscript_ignore(rules)
 
     if args.css:
         dump_rules(rules)
@@ -98,6 +156,10 @@ def main(argv0, argv):
         dump_emote_selectors(rules, args.special)
     elif args.emote_specs:
         dump_emote_specifiers(rules, args.special)
+    elif args.emote_groups:
+        dump_emote_groups(rules, args.special, args.collapse)
+    elif args.emote_sprites:
+        dump_emote_sprites(rules, args.special)
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])
