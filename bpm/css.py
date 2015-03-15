@@ -42,6 +42,8 @@ log = logbook.Logger(__name__)
 #   stringify again.
 
 class Rule:
+    type = "rule"
+
     def __init__(self, selector, properties):
         self.selector = selector
         self.properties = properties
@@ -58,6 +60,8 @@ class Rule:
         return d
 
 class KeyframesRule:
+    type = "keyframes"
+
     def __init__(self, name, keyframes):
         self.name = name
         self.keyframes = keyframes
