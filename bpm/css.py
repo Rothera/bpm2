@@ -126,9 +126,9 @@ def parse_stylesheet(css):
         elif rule.type == "at-rule":
             yield from parse_at_rule(rule)
         elif rule.type == "error":
-            log.warning("Parse error: {}", rule)
+            log.warning("Parse error: {!r}", rule)
         else:
-            log.warning("Unrecognized rule type: {}", rule.type)
+            log.warning("Unrecognized rule type: {!r}", rule.type)
 
 def parse_rule(rule):
     string = "".join([s.serialize() for s in rule.prelude])
@@ -142,7 +142,7 @@ def parse_at_rule(rule):
     elif rule.lower_at_keyword in ["media"]:
         pass # Ignore
     else:
-        log.warning("Unrecognized at-rule keyword: {}", rule.lower_at_keyword)
+        log.warning("Unrecognized at-rule keyword: {!r}", rule.lower_at_keyword)
 
 def parse_keyframes(prelude, content):
     # Find the one IdentToken in the prelude we expect, that signifies the
@@ -154,7 +154,7 @@ def parse_keyframes(prelude, content):
         elif token.type == "ident" and name is None:
             name = token.value
         else:
-            log.warning("Unexpected token found in @keyframes prelude: {}", token)
+            log.warning("Unexpected token found in @keyframes prelude: {!r}", token)
 
     keyframes = []
 
@@ -167,16 +167,16 @@ def parse_keyframes(prelude, content):
             if p is None:
                 p = token.int_value if token.is_integer else token.value
             else:
-                log.warning("Extra percentage token found in @keyframes content: {}", token)
+                log.warning("Extra percentage token found in @keyframes content: {!r}", token)
         elif token.type == "{} block":
             if p is None:
-                log.warning("Curly bracket block found in @keyframes content without preceding percentage token in @keyframes content: {}", token)
+                log.warning("Curly bracket block found in @keyframes content without preceding percentage token in @keyframes content: {!r}", token)
             else:
                 properties = parse_properties(token.content)
                 keyframes.append(Keyframe(p, properties))
                 p = None
         else:
-            log.warning("Unknown token found in @keyframes content: {}", token)
+            log.warning("Unknown token found in @keyframes content: {!r}", token)
 
     return KeyframesRule(name, keyframes)
 
@@ -199,7 +199,7 @@ def stringify_selector(sel):
         if isinstance(sel.pseudo_element, cssselect.parser.FunctionalPseudoElement):
             # sel.pseudo_element.arguments is a list of tokens, which we don't
             # want to try to handle.
-            log.warning("Don't know how to handle functional pseudo element: {}", sel.pseudo_element)
+            log.warning("Don't know how to handle functional pseudo element: {!r}", sel.pseudo_element)
             return None
         else:
             s += "::" + sel.pseudo_element
@@ -228,7 +228,7 @@ def stringify_selector_tree(tree):
 
     elif isinstance(tree, cssselect.parser.Attrib):
         if tree.namespace is not None:
-            log.warning("Don't know how to handle attrib namespace: {}", tree)
+            log.warning("Don't know how to handle attrib namespace: {!r}", tree)
         left = stringify_left(tree.selector)
         if tree.operator == "exists":
             return "%s[%s]" % (left, tree.attrib)
@@ -237,7 +237,7 @@ def stringify_selector_tree(tree):
 
     elif isinstance(tree, cssselect.parser.Element):
         if tree.namespace is not None:
-            log.warning("Don't know how to handle element namespace: {}", tree)
+            log.warning("Don't know how to handle element namespace: {!r}", tree)
         return tree.element or "*"
 
     elif isinstance(tree, cssselect.parser.Hash):
@@ -254,7 +254,7 @@ def stringify_selector_tree(tree):
             return "%s %s %s" % (left, tree.combinator, right)
 
     else:
-        log.warning("Unknown selector parse class: {}", tree)
+        log.warning("Unknown selector parse class: {!r}", tree)
 
 def stringify_left(tree):
     # Special case to avoid output like "*.class" and "*#id"

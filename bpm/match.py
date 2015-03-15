@@ -137,7 +137,7 @@ def parse_selector(selector):
     if not len(m):
         return None # No emotes here
     elif len(m) > 1:
-        log.warning("Multiple emote selectors in {}", selector)
+        log.warning("Multiple emote selectors in {!r}", selector)
         return None
     m = m[0]
 
@@ -152,7 +152,7 @@ def parse_selector(selector):
         if pc == ":nth-of-type(n)":
             continue # Drop these; they're useless
         elif pc and pc not in (":hover", ":active"):
-            log.warning("Unknown pseudo-class on {}: {}", selector, pc)
+            log.warning("Unknown pseudo-class on {!r}: {!r}", selector, pc)
         pclasses.append(pc)
 
     return RawSelector(name, pclasses, prefix, suffix)
