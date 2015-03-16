@@ -19,7 +19,10 @@
 ##
 ################################################################################
 
+import arrow
+
 import sqlalchemy
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -41,3 +44,21 @@ def init_from_config(config, args):
 
 def init_tables(engine):
     Base.metadata.create_all(bind=engine)
+
+class ArrowDateTime(sqlalchemy.TypeDecorator):
+    impl = sqlalchemy.DateTime
+    python_type = arrow.Arrow
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return value.datetime
+        else:
+            return None
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            # PostgreSQL stores in UTC, but we get back a timezone-aware
+            # datetime in the system timezone. Convert to UTC internally.
+            return arrow.get(value, "utc")
+        else:
+            return None
