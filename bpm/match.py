@@ -166,7 +166,7 @@ def parse_specifiers(sel):
     return [s for s in specifiers if s is not None]
 
 IGNORED_PREFIXES = ["body"]
-_thingid_regexp = re.compile(r"""^\.usertext input\[value\$='([a-z0-9])'\] \+ \.usertext-body$""")
+_thingid_regexp = re.compile(r"^\.usertext input\[value\$='([a-z0-9])'\] \+ \.usertext-body$")
 
 CHILD_ELEMENTS = ["em", "strong"]
 
