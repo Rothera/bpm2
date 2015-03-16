@@ -27,8 +27,6 @@ DEFAULT_CONFIG_FILE = "config.json"
 
 def add_config_arguments(parser):
     parser.add_argument("--config", help="Alternate configuration file")
-    parser.add_argument("--database", help="Alternate database URI")
-    parser.add_argument("--database-debug", action="store_true", help="Enable SQLAlchemy debugging")
 
 def load_config(argv0, args):
     if args.config:

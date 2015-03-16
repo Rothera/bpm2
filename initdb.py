@@ -27,6 +27,7 @@ import bpm.scripts
 
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Initialize database tables")
+    bpm.database.add_database_arguments(parser)
     bpm.scripts.add_config_arguments(parser)
 
     args = parser.parse_args(argv)

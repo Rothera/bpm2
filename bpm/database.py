@@ -19,10 +19,12 @@
 ##
 ################################################################################
 
+import os
+
 import arrow
 
 import sqlalchemy
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -31,15 +33,27 @@ Session = sessionmaker()
 
 DEFAULT_DATABASE_URI = "postgresql://bpm@/bpm"
 
-def init_sqlalchemy(uri=DEFAULT_DATABASE_URI, debug=False):
-    engine = sqlalchemy.create_engine(uri, echo=debug)
+def add_database_arguments(parser):
+    parser.add_argument("--database", help="Database URI")
+    parser.add_argument("--database-debug", help="Enable SQLAlchemy debug logs")
+
+def lookup_uri(config, args):
+    if args.database:
+        return args.database
+    elif "database" in config:
+        return config["database"]
+    else:
+        return DEFAULT_DATABASE_URI
+
+def init_sqlalchemy(database_uri, debug=False):
+    engine = sqlalchemy.create_engine(database_uri, echo=debug)
     Session.configure(bind=engine)
     return engine
 
 def init_from_config(config, args):
-    database_uri = config.get("database", args.database or DEFAULT_DATABASE_URI)
+    database_uri = lookup_uri(config, args)
     database_debug = config.get("database_debug", args.database_debug)
-    engine = init_sqlalchemy(uri=database_uri, debug=database_debug)
+    engine = init_sqlalchemy(database_uri, debug=database_debug)
     return engine
 
 def init_tables(engine):
