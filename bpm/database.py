@@ -24,7 +24,9 @@ import os
 import arrow
 
 import sqlalchemy
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -76,3 +78,9 @@ class ArrowDateTime(sqlalchemy.TypeDecorator):
             return arrow.get(value, "utc")
         else:
             return None
+
+class Subreddit(Base):
+    __tablename__ = "subreddits"
+
+    subreddit_name = Column(String, primary_key=True)
+    added = Column(ArrowDateTime(timezone=True), nullable=False)
