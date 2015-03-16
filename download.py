@@ -27,14 +27,12 @@ import bpm.reddit
 
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Download stylesheet")
-    #bpm.scripts.add_config_arguments(parser)
     parser.add_argument("--raw", action="store_true", help="Output raw API response")
     parser.add_argument("-o", help="Output file (css or raw)")
     parser.add_argument("-i", help="Output file (images)")
     parser.add_argument("subreddit", help="Subreddit")
 
     args = parser.parse_args(argv)
-    #config = bpm.scripts.load_config(argv0, args)
 
     if args.raw:
         filename = args.o or args.subreddit + ".json"
