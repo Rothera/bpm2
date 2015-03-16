@@ -28,6 +28,42 @@ import bpm.match
 
 # Group rules together by emote name and specifiers, collapse rules, find sprite.
 
+class Emote:
+    def __init__(self, name, parts):
+        self.name = name
+        self.parts = parts # frozenset(specifiers) -> [rules]
+
+    def __repr__(self):
+        return "Emote(%r, %r)" % (self.name, self.parts)
+
+    def __str__(self):
+        if len(self.parts) > 1:
+            return "<Emote %s: %s parts>" % (self.name, len(self.parts))
+        else:
+            return "<Emote %s>" % (self.name)
+
+    def base(self):
+        return self.parts[frozenset()]
+
+class EmotePart:
+    def __init__(self, specifiers, sprite, css):
+        self.specifiers = specifiers
+        self.sprite = sprite
+        self.css = css
+
+    def __repr__(self):
+        return "EmotePart(%r, %r, %r)" % (self.specifiers, self.sprite, self.css)
+
+    def __str__(self):
+        flags = []
+        if self.specifiers:
+            flags.append("complex")
+        if self.sprite:
+            flags.append("sprite")
+        if self.css:
+            flags.append("css")
+        return "<EmotePart %s>" % (" ".join(flags))
+
 class Sprite:
     def __init__(self, image_url, x, y, width, height):
         self.image_url = image_url
@@ -173,3 +209,15 @@ def check_css(name, css):
     # (image macros are the exception- lots of spurious warnings on those)
     for (prop, value) in sorted(css.items()):
         log.debug("{}: Unknown extra property {!r}: {!r}", name, prop, value)
+
+def extract_emote(name, group):
+    d = {}
+    for (key, rules) in group.items():
+        css = collapse_rules(rules)
+        sprite, css = extract_sprite(name, css)
+        if sprite:
+            clean_css(css)
+            check_css(name, css)
+        part = EmotePart(key, sprite, css)
+        d[key] = part
+    return Emote(name, d)

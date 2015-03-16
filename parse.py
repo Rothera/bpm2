@@ -27,13 +27,12 @@ import bpm.extract
 import bpm.json
 import bpm.match
 
-def dump_rules(rules):
+def dump_rules(rules, use_repr):
     for rule in rules:
-        print(rule)
-
-def dump_rules_repr(rules):
-    for rule in rules:
-        print(repr(rule))
+        if use_repr:
+            print(repr(rule))
+        else:
+            print(rule)
 
 def dump_rules_json(rules):
     data = [rule.serialize() for rule in rules]
@@ -122,6 +121,20 @@ def dump_emote_sprites(rules, special_only):
                 else:
                     print("%s: %s" % (name, css))
 
+def dump_emotes(rules, special_only, use_repr):
+    raw_emotes = bpm.extract.group_rules(rules)
+
+    for (name, group) in raw_emotes.items():
+        emote = bpm.extract.extract_emote(name, group)
+
+        if special_only and len(emote.parts) == 1:
+            continue
+
+        if use_repr:
+            print(repr(emote))
+        else:
+            print(emote)
+
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Parse stylesheet")
     parser.add_argument("--css", action="store_true", help="Dump text rules")
@@ -131,6 +144,8 @@ def main(argv0, argv):
     parser.add_argument("--emote-specs", action="store_true", help="Dump emote specifiers")
     parser.add_argument("--emote-groups", action="store_true", help="Dump emote groups")
     parser.add_argument("--emote-sprites", action="store_true", help="Dump emote sprites")
+    parser.add_argument("--emotes", action="store_true", help="Dump emotes")
+    parser.add_argument("--repr", action="store_true", help="Print repr")
     parser.add_argument("--special", action="store_true", help="Print special emotes only")
     parser.add_argument("--noignore", action="store_true", help="Disregard PONYSCRIPT-IGNORE directives")
     parser.add_argument("--collapse", action="store_true", help="Collapse emote group rules")
@@ -147,9 +162,7 @@ def main(argv0, argv):
         rules = bpm.extract.filter_ponyscript_ignore(rules)
 
     if args.css:
-        dump_rules(rules)
-    elif args.css_repr:
-        dump_rules_repr(rules)
+        dump_rules(rules, args.repr)
     elif args.css_json:
         dump_rules_json(rules)
     elif args.emote_selectors:
@@ -160,6 +173,8 @@ def main(argv0, argv):
         dump_emote_groups(rules, args.special, args.collapse)
     elif args.emote_sprites:
         dump_emote_sprites(rules, args.special)
+    elif args.emotes:
+        dump_emotes(rules, args.special, args.repr)
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])
