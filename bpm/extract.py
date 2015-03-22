@@ -67,6 +67,10 @@ class EmotePart:
             flags.append("css")
         return "<EmotePart %s>" % (" ".join(flags))
 
+    def serialize_specifiers(self):
+        d = [s.serialize() for s in sorted(self.specifiers)]
+        return d
+
 class Sprite:
     def __init__(self, image_url, x, y, width, height):
         self.image_url = image_url
@@ -83,6 +87,9 @@ class Sprite:
             return "<Sprite: (%s, %s) at (%s, %s) in %s>" % (self.width, self.height, self.x, self.y, self.image_url)
         else:
             return "<Sprite: (%s, %s) in %s>" % (self.width, self.height, self.image_url)
+
+    def serialize(self):
+        return {"image_url": self.image_url, "x": self.x, "y": self.y, "width": self.width, "height": self.height}
 
 def filter_ponyscript_ignore(rules):
     ignoring = False
