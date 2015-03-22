@@ -67,8 +67,6 @@ def main(argv0, argv):
             continue
 
         if not args.fix:
-            # Need to bypass the standard URL's due to Cloudflare destroying
-            # animotes.
             real_url = bpm.images.image_download_url(image.url)
             print("Downloading", real_url, "->", path)
 

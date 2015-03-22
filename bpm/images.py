@@ -37,6 +37,13 @@ def image_filename(url):
 
     raise Exception("Unknown image URL", url)
 
+# Figures out the non-CDN image URL.
+#
+# This was more useful when Cloudflare was destroying APNG's, though they no
+# longer seem to be doing so. This isn't strictly necessary anymore, so we
+# don't advertise these URL's anywhere (we give out the official CDN URL in our
+# API responses) but in the interests of paranoia we'll keep this code around
+# for now.
 def image_download_url(url):
     m = _redditmedia_regexp.match(url)
     if m:
