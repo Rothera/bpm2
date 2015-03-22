@@ -22,10 +22,34 @@
 import re
 
 _redditmedia_regexp = re.compile(r"^http://([a-z])\.thumbs\.redditmedia\.com/([a-zA-Z0-9_-]+)\.(png|jpg)$")
+_nohttp_regexp      = re.compile(     r"^//([a-z])\.thumbs\.redditmedia\.com/([a-zA-Z0-9_-]+)\.(png|jpg)$")
 
 def image_filename(url):
     m = _redditmedia_regexp.match(url)
     if m:
-        return "redditmedia-%s-%s.%s" % m.groups()
+        bucket, filename, ext = m.groups()
+        return "redditmedia-%s-%s.%s" % (bucket, filename, ext)
+
+    m = _nohttp_regexp.match(url)
+    if m:
+        bucket, filename, ext = m.groups()
+        return "redditmedia-%s-%s.%s" % (bucket, filename, ext)
 
     raise Exception("Unknown image URL", url)
+
+def image_download_url(url):
+    m = _redditmedia_regexp.match(url)
+    if m:
+        bucket, filename, ext = m.groups()
+        bucket += ".thumbs.redditmedia.com"
+        return "https://s3.amazonaws.com/%s/%s.%s" % (bucket, filename, ext)
+
+    m = _nohttp_regexp.match(url)
+    if m:
+        bucket, filename, ext = m.groups()
+        bucket += ".thumbs.redditmedia.com"
+        return "https://s3.amazonaws.com/%s/%s.%s" % (bucket, filename, ext)
+
+    # Can't rewrite, but can still download
+    print("Warning: Don't know how to rewrite URL:", url)
+    return url
