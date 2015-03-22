@@ -123,9 +123,10 @@ def dump_emote_sprites(rules, special_only):
 
 def dump_emotes(rules, special_only, use_repr):
     raw_emotes = bpm.extract.group_rules(rules)
+    animations = bpm.extract.find_animations(rules)
 
     for (name, group) in raw_emotes.items():
-        emote = bpm.extract.extract_emote(name, group)
+        emote = bpm.extract.extract_emote(name, group, animations)
 
         if special_only and len(emote.parts) == 1:
             continue
@@ -160,6 +161,8 @@ def main(argv0, argv):
 
     if not args.noignore:
         rules = bpm.extract.filter_ponyscript_ignore(rules)
+
+    rules = list(rules) # Force the generator so we can use this multiple times
 
     if args.css:
         dump_rules(rules, args.repr)

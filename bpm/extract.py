@@ -46,13 +46,14 @@ class Emote:
         return self.parts[frozenset()]
 
 class EmotePart:
-    def __init__(self, specifiers, sprite, css):
+    def __init__(self, specifiers, sprite, animation, css):
         self.specifiers = specifiers
         self.sprite = sprite
+        self.animation = animation
         self.css = css
 
     def __repr__(self):
-        return "EmotePart(%r, %r, %r)" % (self.specifiers, self.sprite, self.css)
+        return "EmotePart(%r, %r, %r, %r)" % (self.specifiers, self.sprite, self.animation, self.css)
 
     def __str__(self):
         flags = []
@@ -60,6 +61,8 @@ class EmotePart:
             flags.append("complex")
         if self.sprite:
             flags.append("sprite")
+        if self.animation:
+            flags.append("animation")
         if self.css:
             flags.append("css")
         return "<EmotePart %s>" % (" ".join(flags))
@@ -194,30 +197,70 @@ def extract_sprite(name, original_css):
     else:
         return (None, original_css)
 
-IGNORED_CSS_PROPERTIES = ["background-repeat", "clear", "display"]
+USELESS_PROPERTIES = ["background-repeat", "clear", "display"]
 
 def clean_css(css):
     # Remove some commonly added useless properties. (Note: some of these
     # we could consider discarding for non-sprite emotes, but lets go the
     # conservative route here.)
-    for prop in IGNORED_CSS_PROPERTIES:
+    for prop in USELESS_PROPERTIES:
         if prop in css:
             del css[prop]
+
+def _vendors(prop):
+    return [prop, "-moz-" + prop, "-webkit-" + prop, "-ms-" + prop, "-o-" + prop]
+
+IGNORED_PROPERTIES = _vendors("animation")
+IGNORED_PROPERTIES += ["animation-name"]
+IGNORED_PROPERTIES += _vendors("transform")
 
 def check_css(name, css):
     # Since it has a sprite, it probably shouldn't have any other CSS
     # (image macros are the exception- lots of spurious warnings on those)
     for (prop, value) in sorted(css.items()):
-        log.debug("{}: Unknown extra property {!r}: {!r}", name, prop, value)
+        if prop not in IGNORED_PROPERTIES:
+            log.debug("{}: Unknown extra property {!r}: {!r}", name, prop, value)
 
-def extract_emote(name, group):
+def extract_emote(name, group, animations):
     d = {}
     for (key, rules) in group.items():
         css = collapse_rules(rules)
         sprite, css = extract_sprite(name, css)
+        animation = extract_animation(css, animations)
         if sprite:
             clean_css(css)
             check_css(name, css)
-        part = EmotePart(key, sprite, css)
+        part = EmotePart(key, sprite, animation, css)
         d[key] = part
     return Emote(name, d)
+
+def find_animations(rules):
+    animations = {}
+
+    for rule in rules:
+        if rule.type != "keyframes":
+            continue
+
+        animations[rule.name] = rule
+
+    return animations
+
+def find_animation_name(css):
+    # Note: No effort to handle multiple conflicting ways fo specify an
+    # animation name. We'd probably have to keep properties in declaration
+    # order to do so, which isn't worth the bother.
+    #
+    # Testing in Firefox shows that animations names are case-sensitive.
+
+    if "animation-name" in css:
+        return css["animation-name"]
+
+    if "animation" in css:
+        attrs = css["animation"].split()
+        if attrs:
+            return attrs[0]
+
+def extract_animation(css, animations):
+    name = find_animation_name(css)
+    if name:
+        return animations.get(name)
