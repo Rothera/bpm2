@@ -33,28 +33,28 @@ app = flask.Flask(__name__)
 # stylesheet object tree. This is in hopes that dumber clients will have an
 # easier time parsing the output.
 
-def _serialize_subreddit(sr):
+def _serialize_subreddit(sr, detail_latest=False):
     data = {}
     data["subreddit_name"] = sr.subreddit_name
     data["added"] = sr.added.format()
     data["latest_update_id"] = sr.latest_update_id
     if sr.latest_update_id:
-        data["latest_update"] = _serialize_update(sr.latest_update)
+        data["latest_update"] = _serialize_update(sr.latest_update, detail=detail_latest)
     else:
         data["latest_update"] = None
     return data
 
-def _serialize_update(update):
+def _serialize_update(update, detail=False):
     data = {}
     data["update_id"] = update.update_id
     data["subreddit_name"] = update.subreddit_name
     data["update_seq"] = update.update_seq
     data["stylesheet_id"] = update.stylesheet_id
     data["created"] = update.created.format()
-    data["stylesheet"] = _serialize_stylesheet(update.stylesheet, False)
+    data["stylesheet"] = _serialize_stylesheet(update.stylesheet, detail=detail)
     return data
 
-def _serialize_stylesheet(ss, detail):
+def _serialize_stylesheet(ss, detail=False):
     data = {}
     data["stylesheet_id"] = ss.stylesheet_id
     data["subreddit_name"] = ss.subreddit_name
@@ -117,7 +117,7 @@ def subreddits():
 
     data = {}
     for sr in subreddits:
-        data[sr.subreddit_name] = _serialize_subreddit(sr)
+        data[sr.subreddit_name] = _serialize_subreddit(sr, detail_latest=False)
 
     return flask.jsonify(data)
 
@@ -126,7 +126,7 @@ def subreddits():
 def r_subreddit(subreddit_name):
     s = Session()
     sr = s.query(Subreddit).get(subreddit_name)
-    data = _serialize_subreddit(sr)
+    data = _serialize_subreddit(sr, detail_latest=True)
     return flask.jsonify(data)
 
 # Gets a subreddit recent update listing
@@ -136,7 +136,7 @@ def r_subreddit_updates(subreddit_name):
     updates = s.query(Update).filter_by(subreddit_name=subreddit_name).order_by(Update.update_seq.desc()).limit(10).all()
     data = {"updates": []}
     for update in updates:
-        data["updates"].append(_serialize_update(update))
+        data["updates"].append(_serialize_update(update, detail=False))
     return flask.jsonify(data)
 
 # Gets an update by ID
@@ -144,7 +144,7 @@ def r_subreddit_updates(subreddit_name):
 def update(update_id):
     s = Session()
     update = s.query(Update).get(update_id)
-    data = _serialize_update(update)
+    data = _serialize_update(update, detail=True)
     return flask.jsonify(data)
 
 # Gets an update by sequence number
@@ -152,7 +152,7 @@ def update(update_id):
 def r_subreddit_update(subreddit_name, update_seq):
     s = Session()
     update = s.query(Update).filter_by(subreddit_name=subreddit_name, update_seq=update_seq).one()
-    data = _serialize_update(update)
+    data = _serialize_update(update, detail=True)
     return flask.jsonify(data)
 
 # Gets a subreddit recent stylesheet listing
@@ -162,7 +162,7 @@ def r_subreddit_stylesheets(subreddit_name):
     stylesheets = s.query(Stylesheet).filter_by(subreddit_name=subreddit_name).order_by(Stylesheet.stylesheet_seq.desc()).limit(10).all()
     data = {"stylesheets": []}
     for ss in stylesheets:
-        data["stylesheets"].append(_serialize_stylesheet(ss, False))
+        data["stylesheets"].append(_serialize_stylesheet(ss, detail=False))
     return flask.jsonify(data)
 
 # Gets a stylesheet by ID
@@ -170,7 +170,7 @@ def r_subreddit_stylesheets(subreddit_name):
 def stylesheet(stylesheet_id):
     s = Session()
     ss = s.query(Stylesheet).get(stylesheet_id)
-    data = _serialize_stylesheet(ss, True)
+    data = _serialize_stylesheet(ss, detail=True)
     return flask.jsonify(data)
 
 # Gets a stylesheet by sequence number
@@ -178,7 +178,7 @@ def stylesheet(stylesheet_id):
 def r_subreddit_stylesheet(subreddit_name, stylesheet_seq):
     s = Session()
     ss = s.query(Stylesheet).filter_by(subreddit_name=subreddit_name, stylesheet_seq=stylesheet_seq).one()
-    data = _serialize_stylesheet(ss, True)
+    data = _serialize_stylesheet(ss, detail=True)
     return flask.jsonify(data)
 
 # Gets stylesheet CSS by ID
