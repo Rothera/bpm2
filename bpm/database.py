@@ -37,7 +37,7 @@ DEFAULT_DATABASE_URI = "postgresql://bpm@/bpm"
 
 def add_database_arguments(parser):
     parser.add_argument("--database", help="Database URI")
-    parser.add_argument("--database-debug", help="Enable SQLAlchemy debug logs")
+    parser.add_argument("--database-debug", action="store_true", help="Enable SQLAlchemy debug logs")
 
 def lookup_uri(config, args):
     if args.database:
