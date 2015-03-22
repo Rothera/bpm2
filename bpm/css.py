@@ -176,6 +176,11 @@ def parse_keyframes(prelude, content):
                 p = token.int_value if token.is_integer else token.value
             else:
                 log.warning("Extra percentage token found in @keyframes content: {!r}", token)
+        elif token.type == "ident" and token.lower_value in ("from", "to"):
+            if p is None:
+                p = 0 if token.lower_value == "from" else 1
+            else:
+                log.warning("Extra ident token found in @keyframes content: {!r}", token)
         elif token.type == "{} block":
             if p is None:
                 log.warning("Curly bracket block found in @keyframes content without preceding percentage token in @keyframes content: {!r}", token)
