@@ -147,15 +147,24 @@ def collapse_rules(rules):
 def extract_sprite(name, original_css):
     css = original_css.copy()
 
-    # If it's a standard image emote, it should float to the left at a minimum.
-    if "float" not in css:
+    # Required emote markers
+    if "width" not in css or "height" not in css:
         return (None, original_css)
-    else:
+    if "float" not in css and "display" not in css:
+        return (None, original_css)
+
+    # Check for reasonable values
+    if "float" in css:
         if css["float"].lower() != "left":
             log.warning("{}: Unusual value for float property: {!r}", name, css["float"])
         del css["float"]
 
-    # Find the background image.
+    if "display" in css:
+        if css["display"].lower() != "block":
+            log.warning("{}: Unusual value for display property: {!r}", name, css["display"])
+        del css["display"]
+
+    # Find the background image. One of these is also required.
     image_url = None
     if "background" in css:
         parts = bpm.cssutil.prop(css.pop("background")).split()
@@ -181,30 +190,30 @@ def extract_sprite(name, original_css):
 
     # Need ALL properties to be considered a normal emote. If it isn't, we
     # use NONE of them.
-    if image_url is not None and "width" in css and "height" in css:
-        # Size
-        width = bpm.cssutil.size(css.pop("width"))
-        height = bpm.cssutil.size(css.pop("height"))
-
-        # Position
-        if "background-position" in css:
-            x, y = bpm.cssutil.position(css.pop("background-position"), width, height)
-        else:
-            x, y = 0, 0
-
-        if x > 0 or y > 0:
-            log.warning("{}: Positive background position ({}, {})", name, x, y)
-            # No idea what to do here. We'd need the image size to do this
-            # correctly.
-            x = -abs(x)
-            y = -abs(y)
-
-        sprite = Sprite(image_url, x, y, width, height)
-        return (sprite, css)
-    else:
+    if image_url is None:
         return (None, original_css)
 
-USELESS_PROPERTIES = ["background-repeat", "clear", "display"]
+    # Size
+    width = bpm.cssutil.size(css.pop("width"))
+    height = bpm.cssutil.size(css.pop("height"))
+
+    # Position
+    if "background-position" in css:
+        x, y = bpm.cssutil.position(css.pop("background-position"), width, height)
+    else:
+        x, y = 0, 0
+
+    if x > 0 or y > 0:
+        log.warning("{}: Positive background position ({}, {})", name, x, y)
+        # No idea what to do here. We'd need the image size to do this
+        # correctly.
+        x = -abs(x)
+        y = -abs(y)
+
+    sprite = Sprite(image_url, x, y, width, height)
+    return (sprite, css)
+
+USELESS_PROPERTIES = ["background-repeat", "clear"]
 
 def clean_css(css):
     # Remove some commonly added useless properties. (Note: some of these
