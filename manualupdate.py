@@ -116,8 +116,8 @@ def main(argv0, argv):
             contains_emotes = name in spritesheets
             image = bpm.database.Image(
                     stylesheet_id=stylesheet.stylesheet_id,
-                    image_name=name,
-                    image_url=url,
+                    name=name,
+                    url=url,
                     contains_emotes=contains_emotes,
                     filename=filename)
             s.add(image)
@@ -126,11 +126,12 @@ def main(argv0, argv):
         s.begin_nested()
         emote_rows = {}
         for (name, emote) in sorted(emotes.items()):
-            e = bpm.database.Emote(stylesheet_id=stylesheet.stylesheet_id, emote_name=name)
+            e = bpm.database.Emote(stylesheet_id=stylesheet.stylesheet_id, name=name)
             emote_rows[name] = e
             s.add(e)
         s.commit()
 
+        # Add all emote parts.
         for (name, emote) in sorted(emotes.items()):
             for (specifiers, part) in sorted(emote.parts.items()):
                 specifiers_json = json.dumps(part.serialize_specifiers()) if part.specifiers else None
@@ -154,7 +155,15 @@ def main(argv0, argv):
         # Add update
         seq = bpm.database.Update.next_update_seq(s, subreddit)
         update = bpm.database.Update(subreddit_name=args.subreddit, update_seq=seq, stylesheet_id=stylesheet.stylesheet_id, created=now)
+
+        # Partial commit to get update ID
+        s.begin_nested()
         s.add(update)
+        s.commit()
+
+        # Mark this as the latest update.
+        subreddit.latest_update_id = update.update_id
+        s.add(subreddit)
 
         s.commit()
 
