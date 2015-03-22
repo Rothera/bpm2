@@ -47,6 +47,11 @@ class RawSelector:
             s = s + " " + self.suffix
         return s
 
+# Specifiers.
+#
+# Sort order of specifiers is well-defined: sort first on the type, then on the
+# contents.
+
 class ThingID:
     type = "thingid"
 
@@ -61,6 +66,12 @@ class ThingID:
 
     def __eq__(self, other):
         return self.type == other.type and self.char == other.char
+
+    def __lt__(self, other):
+        if self.type != other.type:
+            return self.type < other.type
+        else:
+            return self.char < other.char
 
     def serialize(self):
         d = {"type": "thingid", "char": self.char}
@@ -81,6 +92,12 @@ class ChildElement:
     def __eq__(self, other):
         return self.type == other.type and self.element == other.element
 
+    def __lt__(self, other):
+        if self.type != other.type:
+            return self.type < other.type
+        else:
+            return self.element < other.element
+
     def serialize(self):
         d = {"type": "childelement", "element": self.element}
         return d
@@ -99,6 +116,12 @@ class PseudoClass:
 
     def __eq__(self, other):
         return self.type == other.type and self.pclass == other.pclass
+
+    def __lt__(self, other):
+        if self.type != other.type:
+            return self.type < other.type
+        else:
+            return self.pclass < other.pclass
 
     def serialize(self):
         d = {"type": "pclass", "pclass": self.pclass}
