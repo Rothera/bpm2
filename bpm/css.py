@@ -137,8 +137,16 @@ def parse_rule(rule):
         yield Rule(stringify_selector(sel), parse_properties(rule.content))
 
 def parse_at_rule(rule):
-    if rule.lower_at_keyword in ["keyframes", "-moz-keyframes", "-webkit-keyframes", "-o-keyframes", "-ms-keyframes"]:
+    if rule.lower_at_keyword in ["keyframes"]:
         yield parse_keyframes(rule.prelude, rule.content)
+    elif rule.lower_at_keyword in ["-moz-keyframes", "-webkit-keyframes", "-o-keyframes", "-ms-keyframes"]:
+        # Stylesheets often include alternate @keyframes declarations with
+        # vendor prefixes. Rather than parsing all of them and dealing with the
+        # duplicates (never mind that they will sometimes differ in content) we
+        # take the simple way out and ignore the ones with vendor prefixes.
+        # Then, if we ever see two @keyframes with the same name, we can just
+        # ignore the first one.
+        pass
     elif rule.lower_at_keyword in ["media"]:
         pass # Ignore
     else:
