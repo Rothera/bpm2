@@ -146,10 +146,12 @@ def main(argv0, argv):
     parser.add_argument("--emote-groups", action="store_true", help="Dump emote groups")
     parser.add_argument("--emote-sprites", action="store_true", help="Dump emote sprites")
     parser.add_argument("--emotes", action="store_true", help="Dump emotes")
-    parser.add_argument("--repr", action="store_true", help="Print repr")
+    parser.add_argument("--emotes-repr", action="store_true", help="Dump repr emotes")
+
     parser.add_argument("--special", action="store_true", help="Print special emotes only")
     parser.add_argument("--noignore", action="store_true", help="Disregard PONYSCRIPT-IGNORE directives")
     parser.add_argument("--collapse", action="store_true", help="Collapse emote group rules")
+
     parser.add_argument("stylesheet", help="Stylesheet")
 
     args = parser.parse_args(argv)
@@ -165,7 +167,9 @@ def main(argv0, argv):
     rules = list(rules) # Force the generator so we can use this multiple times
 
     if args.css:
-        dump_rules(rules, args.repr)
+        dump_rules(rules, False)
+    elif args.css_repr:
+        dump_rules(rules, True)
     elif args.css_json:
         dump_rules_json(rules)
     elif args.emote_selectors:
@@ -177,7 +181,9 @@ def main(argv0, argv):
     elif args.emote_sprites:
         dump_emote_sprites(rules, args.special)
     elif args.emotes:
-        dump_emotes(rules, args.special, args.repr)
+        dump_emotes(rules, args.special, False)
+    elif args.emotes_repr:
+        dump_emotes(rules, args.special, True)
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])
