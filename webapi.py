@@ -24,7 +24,7 @@ import sys
 
 import bpm.database
 import bpm.scripts
-import bpm.web
+import bpm.api
 
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Initialize database tables")
@@ -38,7 +38,7 @@ def main(argv0, argv):
     config = bpm.scripts.load_config(argv0, args)
     engine = bpm.database.init_from_config(config, args)
 
-    bpm.web.app.run(host=args.host, port=args.port, debug=args.flask_debug)
+    bpm.api.app.run(host=args.host, port=args.port, debug=args.flask_debug)
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])

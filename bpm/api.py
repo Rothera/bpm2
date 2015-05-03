@@ -33,6 +33,10 @@ app = flask.Flask(__name__)
 # stylesheet object tree. This is in hopes that dumber clients will have an
 # easier time parsing the output.
 
+# Note: emote_id and part_id are pretty much useless, but maybe someone will
+# find a purpose for them, so they remain in the output. They make a nice
+# identifier.
+
 def _serialize_subreddit(sr, detail_latest=False):
     data = {}
     data["subreddit_name"] = sr.subreddit_name
