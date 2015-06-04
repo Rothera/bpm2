@@ -30,7 +30,6 @@ import bpm.css
 import bpm.database
 import bpm.extract
 import bpm.images
-import bpm.scripts
 
 def extract_emotes(rules):
     raw_emotes = bpm.extract.group_rules(rules)
@@ -59,7 +58,6 @@ def find_spritesheets(emotes):
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Manually create subreddit update")
     bpm.database.add_database_arguments(parser)
-    bpm.scripts.add_config_arguments(parser)
     parser.add_argument("-n", action="store_true", help="Don't commit")
     parser.add_argument("--noignore", action="store_true", help="Disregard PONYSCRIPT-IGNORE directives")
     parser.add_argument("subreddit", help="Subreddit")
@@ -67,8 +65,7 @@ def main(argv0, argv):
     parser.add_argument("images", help="Images file")
 
     args = parser.parse_args(argv)
-    config = bpm.scripts.load_config(argv0, args)
-    engine = bpm.database.init_from_config(config, args)
+    engine = bpm.database.init_from_args(args)
 
     now = arrow.utcnow()
 

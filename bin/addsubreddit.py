@@ -25,17 +25,14 @@ import sys
 import arrow
 
 import bpm.database
-import bpm.scripts
 
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Add subreddit")
     bpm.database.add_database_arguments(parser)
-    bpm.scripts.add_config_arguments(parser)
     parser.add_argument("subreddit", help="Subreddit")
 
     args = parser.parse_args(argv)
-    config = bpm.scripts.load_config(argv0, args)
-    engine = bpm.database.init_from_config(config, args)
+    engine = bpm.database.init_from_args(args)
 
     now = arrow.utcnow()
 

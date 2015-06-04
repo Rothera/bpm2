@@ -28,7 +28,6 @@ import requests
 
 import bpm.database
 import bpm.images
-import bpm.scripts
 from bpm.database import Subreddit, Stylesheet, Image
 
 def mark_download(s, image):
@@ -39,14 +38,12 @@ def mark_download(s, image):
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Download pending images")
     bpm.database.add_database_arguments(parser)
-    bpm.scripts.add_config_arguments(parser)
     parser.add_argument("-n", action="store_true", help="Don't commit")
     parser.add_argument("--fix", action="store_true", help="Mark existing files as downloaded")
     parser.add_argument("-l", action="store_true", help="List pending images")
 
     args = parser.parse_args(argv)
-    config = bpm.scripts.load_config(argv0, args)
-    engine = bpm.database.init_from_config(config, args)
+    engine = bpm.database.init_from_args(args)
 
     s = bpm.database.Session()
 
