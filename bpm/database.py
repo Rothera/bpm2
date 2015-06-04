@@ -37,18 +37,21 @@ Session = sessionmaker()
 
 DEFAULT_DATABASE_URI = "postgresql://bpm@/bpm"
 
-def add_database_arguments(parser):
+def add_database_arguments(parser, debug_default=False):
     parser.add_argument("--database", help="Database URI")
-    parser.add_argument("--database-debug", action="store_true", help="Enable SQLAlchemy debug logs")
+    if not debug_default:
+        parser.add_argument("--database-debug", action="store_true", help="Enable SQLAlchemy debug logs")
 
 def init_sqlalchemy(database_uri, debug=False):
     engine = sqlalchemy.create_engine(database_uri, echo=debug)
     Session.configure(bind=engine)
     return engine
 
-def init_from_args(args):
+def init_from_args(args, debug=None):
     database_uri = args.database or DEFAULT_DATABASE_URI
-    engine = init_sqlalchemy(database_uri, debug=args.database_debug)
+    if debug is None:
+        debug = args.database_debug
+    engine = init_sqlalchemy(database_uri, debug=debug)
     return engine
 
 def init_tables(engine):
