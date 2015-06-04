@@ -27,13 +27,13 @@ setup(
     description="BetterPonymotes",
     packages=["bpm"],
     scripts=[
-        "addsubreddit.py",
-        "dlimages.py",
-        "download.py",
-        "initdb.py",
-        "manualupdate.py",
-        "parse.py",
-        "webapi.py"
+        "bin/addsubreddit.py",
+        "bin/dlimages.py",
+        "bin/download.py",
+        "bin/initdb.py",
+        "bin/manualupdate.py",
+        "bin/parse.py",
+        "bin/webapi.py"
     ],
     install_requires=[
         "arrow",
