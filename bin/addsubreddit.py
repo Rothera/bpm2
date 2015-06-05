@@ -19,27 +19,9 @@
 ##
 ################################################################################
 
-import argparse
 import sys
 
-import arrow
-
-import bpm.database
-
-def main(argv0, argv):
-    parser = argparse.ArgumentParser(prog=argv0, description="Add subreddit")
-    bpm.database.add_database_arguments(parser)
-    parser.add_argument("subreddit", help="Subreddit")
-
-    args = parser.parse_args(argv)
-    engine = bpm.database.init_from_args(args)
-
-    now = arrow.utcnow()
-
-    s = bpm.database.Session()
-    sr = bpm.database.Subreddit(subreddit_name=args.subreddit, added=now)
-    s.add(sr)
-    s.commit()
+import bpm.scripts.addsubreddit
 
 if __name__ == "__main__":
-    main(sys.argv[0], sys.argv[1:])
+    bpm.scripts.addsubreddit.main(sys.argv[0], sys.argv[1:])

@@ -19,9 +19,23 @@
 ##
 ################################################################################
 
+import argparse
 import sys
 
-import bpm.scripts.download
+import bpm.database
+import bpm.api
+
+def main(argv0, argv):
+    parser = argparse.ArgumentParser(prog=argv0, description="Run data API")
+    bpm.database.add_database_arguments(parser)
+    parser.add_argument("--flask-debug", action="store_true", help="Enable Flask debugging")
+    parser.add_argument("--host", help="Host to bind to")
+    parser.add_argument("--port", type=int, help="Port to bind to")
+
+    args = parser.parse_args(argv)
+    engine = bpm.database.init_from_args(args)
+
+    bpm.api.app.run(host=args.host, port=args.port, debug=args.flask_debug)
 
 if __name__ == "__main__":
-    bpm.scripts.download.main(sys.argv[0], sys.argv[1:])
+    main(sys.argv[0], sys.argv[1:])

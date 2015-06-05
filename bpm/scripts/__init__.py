@@ -18,10 +18,3 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ################################################################################
-
-import sys
-
-import bpm.scripts.download
-
-if __name__ == "__main__":
-    bpm.scripts.download.main(sys.argv[0], sys.argv[1:])

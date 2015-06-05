@@ -19,19 +19,9 @@
 ##
 ################################################################################
 
-import argparse
 import sys
 
-import bpm.database
-
-def main(argv0, argv):
-    parser = argparse.ArgumentParser(prog=argv0, description="Initialize database tables")
-    bpm.database.add_database_arguments(parser, debug_default=True)
-
-    args = parser.parse_args(argv)
-    engine = bpm.database.init_from_args(args, debug=True)
-
-    bpm.database.init_tables(engine)
+import bpm.scripts.initdb
 
 if __name__ == "__main__":
-    main(sys.argv[0], sys.argv[1:])
+    bpm.scripts.initdb.main(sys.argv[0], sys.argv[1:])
