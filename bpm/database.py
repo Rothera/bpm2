@@ -24,38 +24,49 @@ import os
 import arrow
 
 import sqlalchemy
+import sqlalchemy.orm
+import sqlalchemy.ext.declarative
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy import func
-from sqlalchemy.orm import backref, deferred, relationship, sessionmaker
+from sqlalchemy.orm import backref, deferred, relationship
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
-Session = sessionmaker()
+Base = sqlalchemy.ext.declarative.declarative_base()
+session_factory = sqlalchemy.orm.sessionmaker()
+Session = sqlalchemy.orm.scoped_session(session_factory)
 
 DEFAULT_DATABASE_URI = "postgresql://bpm@/bpm"
 
-def add_database_arguments(parser, debug_default=False):
-    parser.add_argument("--database", help="Database URI")
-    if not debug_default:
-        parser.add_argument("--database-debug", action="store_true", help="Enable SQLAlchemy debug logs")
+def setup_sqlalchemy(database_uri=None, debug=False):
+    if database_uri is None:
+        database_uri = DEFAULT_DATABASE_URI
 
-def init_sqlalchemy(database_uri, debug=False):
     engine = sqlalchemy.create_engine(database_uri, echo=debug)
     Session.configure(bind=engine)
     return engine
 
+def _cleanup_session(exc):
+    Session.remove()
+
+def setup_flask(app):
+    app.teardown_appcontext(_cleanup_session)
+
+def create_tables(engine):
+    Base.metadata.create_all(bind=engine)
+
+def add_database_arguments(parser, debug_default=False):
+    parser.add_argument("--database", help="Database URI")
+    #parser.add_argument("--nocommit", action="store_true", help="Don't commit")
+    if not debug_default:
+        parser.add_argument("--database-debug", action="store_true", help="Enable SQLAlchemy debug logs")
+
 def init_from_args(args, debug=None):
-    database_uri = args.database or DEFAULT_DATABASE_URI
     if debug is None:
         debug = args.database_debug
-    engine = init_sqlalchemy(database_uri, debug=debug)
+    engine = setup_sqlalchemy(args.database, debug=debug)
     return engine
-
-def init_tables(engine):
-    Base.metadata.create_all(bind=engine)
 
 class ArrowDateTime(sqlalchemy.TypeDecorator):
     impl = sqlalchemy.DateTime

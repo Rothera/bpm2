@@ -34,6 +34,7 @@ def main(argv0, argv):
 
     args = parser.parse_args(argv)
     engine = bpm.database.init_from_args(args)
+    bpm.database.setup_flask(bpm.webapi.app)
 
     bpm.webapi.app.run(host=args.host, port=args.port, debug=args.flask_debug)
 

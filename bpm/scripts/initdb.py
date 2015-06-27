@@ -31,7 +31,7 @@ def main(argv0, argv):
     args = parser.parse_args(argv)
     engine = bpm.database.init_from_args(args, debug=True)
 
-    bpm.database.init_tables(engine)
+    bpm.database.create_tables(engine)
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])
