@@ -19,7 +19,7 @@ system):
     GRANT ALL ON DATABASE bpm TO bpm;
 
 For more complex configurations, esp. password/user authentication or network
-connections, refer to PostgreSQL documentation, pg_hba.conf, config.json, and
+connections, refer to PostgreSQL documentation, pg_hba.conf, and
 [SQLAlchemy documentation](http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html#database-urls).
 
 To install required Python packages, the recommended setup is to create a
