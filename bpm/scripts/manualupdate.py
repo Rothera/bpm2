@@ -63,11 +63,11 @@ def main(argv0, argv):
     parser.add_argument("subreddit", help="Subreddit")
     parser.add_argument("stylesheet", help="Stylesheet")
     parser.add_argument("images", help="Images file")
-
     args = parser.parse_args(argv)
-    engine = bpm.database.init_from_args(args)
 
     now = arrow.utcnow()
+
+    engine = bpm.database.init_from_args(args)
 
     with open(args.stylesheet) as file:
         css = file.read()

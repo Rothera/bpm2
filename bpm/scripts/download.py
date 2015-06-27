@@ -31,7 +31,6 @@ def main(argv0, argv):
     parser.add_argument("-o", help="Output file (css or raw)")
     parser.add_argument("-i", help="Output file (images)")
     parser.add_argument("subreddit", help="Subreddit")
-
     args = parser.parse_args(argv)
 
     if args.raw:

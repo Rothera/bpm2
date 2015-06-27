@@ -41,10 +41,9 @@ def main(argv0, argv):
     parser.add_argument("-n", action="store_true", help="Don't commit")
     parser.add_argument("--fix", action="store_true", help="Mark existing files as downloaded")
     parser.add_argument("-l", action="store_true", help="List pending images")
-
     args = parser.parse_args(argv)
-    engine = bpm.database.init_from_args(args)
 
+    engine = bpm.database.init_from_args(args)
     s = bpm.database.Session()
 
     if args.l:

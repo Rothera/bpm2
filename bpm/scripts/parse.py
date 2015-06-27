@@ -148,12 +148,9 @@ def main(argv0, argv):
     parser.add_argument("--emote-sprites", action="store_true", help="Dump emote sprites")
     parser.add_argument("--emotes", action="store_true", help="Dump emotes")
     parser.add_argument("--emotes-repr", action="store_true", help="Dump repr emotes")
-
     parser.add_argument("--special", action="store_true", help="Print special emotes only")
     parser.add_argument("--noignore", action="store_true", help="Disregard PONYSCRIPT-IGNORE directives")
-
     parser.add_argument("stylesheet", help="Stylesheet")
-
     args = parser.parse_args(argv)
 
     with open(args.stylesheet) as file:

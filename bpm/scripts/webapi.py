@@ -31,8 +31,8 @@ def main(argv0, argv):
     parser.add_argument("--flask-debug", action="store_true", help="Enable Flask debugging")
     parser.add_argument("--host", help="Host to bind to")
     parser.add_argument("--port", type=int, help="Port to bind to")
-
     args = parser.parse_args(argv)
+
     engine = bpm.database.init_from_args(args)
     bpm.database.setup_flask(bpm.webapi.app)
 

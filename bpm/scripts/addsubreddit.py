@@ -30,15 +30,16 @@ def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Add subreddit")
     bpm.database.add_database_arguments(parser)
     parser.add_argument("subreddit", help="Subreddit")
-
     args = parser.parse_args(argv)
-    engine = bpm.database.init_from_args(args)
 
     now = arrow.utcnow()
 
+    engine = bpm.database.init_from_args(args)
     s = bpm.database.Session()
+
     sr = bpm.database.Subreddit(subreddit_name=args.subreddit, added=now)
     s.add(sr)
+
     s.commit()
 
 if __name__ == "__main__":
