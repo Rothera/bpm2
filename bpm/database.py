@@ -19,6 +19,7 @@
 ##
 ################################################################################
 
+import json
 import os
 
 import arrow
@@ -117,6 +118,10 @@ class Update(Base):
     subreddit = relationship("Subreddit", backref="updates", foreign_keys=[subreddit_name])
     stylesheet = relationship("Stylesheet", backref="updates")
 
+    __table_args__ = (
+        UniqueConstraint("subreddit_name", "update_seq"),
+        )
+
     @classmethod
     def next_update_seq(cls, s, subreddit):
         max = s.query(func.max(cls.update_seq)).filter_by(subreddit_name=subreddit.subreddit_name).one()[0]
@@ -124,10 +129,6 @@ class Update(Base):
             return 0
         else:
             return max + 1
-
-    __table_args__ = (
-        UniqueConstraint("subreddit_name", "update_seq"),
-        )
 
 class Stylesheet(Base):
     __tablename__ = "stylesheets"
@@ -144,6 +145,10 @@ class Stylesheet(Base):
     # "images" backref
     # "emotes" backref
 
+    __table_args__ = (
+        UniqueConstraint("subreddit_name", "stylesheet_seq"),
+        )
+
     @classmethod
     def next_stylesheet_seq(cls, s, subreddit):
         max = s.query(func.max(cls.stylesheet_seq)).filter_by(subreddit_name=subreddit.subreddit_name).one()[0]
@@ -151,10 +156,6 @@ class Stylesheet(Base):
             return 0
         else:
             return max + 1
-
-    __table_args__ = (
-        UniqueConstraint("subreddit_name", "stylesheet_seq"),
-        )
 
 class Image(Base):
     __tablename__ = "images"
@@ -208,3 +209,21 @@ class EmotePart(Base):
     __table_args__ = (
         UniqueConstraint("emote_id", "specifiers"),
         )
+
+    def serialize(self):
+        data = {}
+        if self.specifiers:
+            data["specifiers"] = json.loads(self.specifiers)
+        if self.sprite_image_url:
+            sprite = {}
+            sprite["image_url"] = self.sprite_image_url
+            sprite["x"] = self.sprite_x
+            sprite["y"] = self.sprite_y
+            sprite["width"] = self.sprite_width
+            sprite["height"] = self.sprite_height
+            data["sprite"] = sprite
+        if self.animation:
+            data["animation"] = self.animation
+        if self.css:
+            data["css"] = json.loads(self.css)
+        return data

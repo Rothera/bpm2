@@ -19,33 +19,9 @@
 ##
 ################################################################################
 
-from setuptools import setup
+import sys
 
-setup(
-    name="bpm",
-    version="2.0",
-    description="BetterPonymotes",
-    packages=["bpm"],
-    scripts=[
-        "bin/addsubreddit.py",
-        "bin/dlimages.py",
-        "bin/download.py",
-        "bin/initdb.py",
-        "bin/manualupdate.py",
-        "bin/parse.py",
-        "bin/webapi.py"
-    ],
-    install_requires=[
-        "arrow",
-        "cssselect",
-        "Flask",
-        "gunicorn",
-        "Logbook",
-        "Mako",
-        "psycopg2",
-        "PyYAML",
-        "requests",
-        "SQLAlchemy",
-        "tinycss2"
-    ]
-)
+import bpm.scripts.package
+
+if __name__ == "__main__":
+    bpm.scripts.package.main(sys.argv[0], sys.argv[1:])

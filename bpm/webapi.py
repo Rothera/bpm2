@@ -90,27 +90,10 @@ def _serialize_emote(emote):
     data["name"] = emote.name
     data["parts"] = []
     for part in emote.parts:
-        data["parts"].append(_serialize_emote_part(part))
-    return data
-
-def _serialize_emote_part(part):
-    data = {}
-    data["part_id"] = part.part_id
-    data["emote_id"] = part.emote_id
-    if part.specifiers:
-        data["specifiers"] = json.loads(part.specifiers)
-    if part.sprite_image_url:
-        sprite = {}
-        sprite["image_url"] = part.sprite_image_url
-        sprite["x"] = part.sprite_x
-        sprite["y"] = part.sprite_y
-        sprite["width"] = part.sprite_width
-        sprite["height"] = part.sprite_height
-        data["sprite"] = sprite
-    if part.animation:
-        data["animation"] = part.animation
-    if part.css:
-        data["css"] = json.loads(part.css)
+        part_data = part.serialize()
+        part_data["part_id"] = part.part_id
+        part_data["emote_id"] = part.emote_id
+        data["parts"].append(part_data)
     return data
 
 # Gets a subreddit listing

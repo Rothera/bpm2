@@ -262,7 +262,7 @@ def find_animations(rules):
     return animations
 
 def find_animation_name(css):
-    # Note: No effort to handle multiple conflicting ways fo specify an
+    # Note: No effort to handle multiple conflicting ways to specify an
     # animation name. We'd probably have to keep properties in declaration
     # order to do so, which isn't worth the bother.
     #

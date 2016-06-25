@@ -47,6 +47,7 @@ import sys
 def _encode(obj, indent, split_lists, max_depth, sort_keys):
     if max_depth is not None:
         max_depth += 1
+
     def _encode_obj(obj, depth):
         if isinstance(obj, str):
             # Because who cares about portability

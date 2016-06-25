@@ -88,81 +88,83 @@ def main(argv0, argv):
 
     # All database access is conditional on -n to avoid errors using this script
     # on subreddits that aren't in the table.
-    if not args.n:
-        s = bpm.database.Session()
+    if args.n:
+        return
 
-        subreddit = s.query(bpm.database.Subreddit).get(args.subreddit)
+    s = bpm.database.Session()
 
-        # Add stylesheet
-        stylesheet_seq = bpm.database.Stylesheet.next_stylesheet_seq(s, subreddit)
-        stylesheet = bpm.database.Stylesheet(
-            subreddit_name=args.subreddit,
-            stylesheet_seq=stylesheet_seq,
-            downloaded=now,
-            css=css,
-            css_hash=css_hash)
+    subreddit = s.query(bpm.database.Subreddit).get(args.subreddit)
 
-        # Partial commit to get stylesheet_id
-        s.begin_nested()
-        s.add(stylesheet)
-        s.commit()
+    # Add stylesheet
+    stylesheet_seq = bpm.database.Stylesheet.next_stylesheet_seq(s, subreddit)
+    stylesheet = bpm.database.Stylesheet(
+        subreddit_name=args.subreddit,
+        stylesheet_seq=stylesheet_seq,
+        downloaded=now,
+        css=css,
+        css_hash=css_hash)
 
-        # Add all images.
-        for (name, url) in sorted(images.items()):
-            filename = bpm.images.image_filename(url)
-            contains_emotes = name in spritesheets
-            image = bpm.database.Image(
-                    stylesheet_id=stylesheet.stylesheet_id,
-                    name=name,
-                    url=url,
-                    contains_emotes=contains_emotes,
-                    filename=filename)
-            s.add(image)
+    # Partial commit to get stylesheet_id
+    s.begin_nested()
+    s.add(stylesheet)
+    s.commit()
 
-        # Add all emotes (not parts). One big partial commit to get emote ID's.
-        s.begin_nested()
-        emote_rows = {}
-        for (name, emote) in sorted(emotes.items()):
-            e = bpm.database.Emote(stylesheet_id=stylesheet.stylesheet_id, name=name)
-            emote_rows[name] = e
-            s.add(e)
-        s.commit()
+    # Add all images.
+    for (name, url) in sorted(images.items()):
+        filename = bpm.images.image_filename(url)
+        contains_emotes = name in spritesheets
+        image = bpm.database.Image(
+                stylesheet_id=stylesheet.stylesheet_id,
+                name=name,
+                url=url,
+                contains_emotes=contains_emotes,
+                filename=filename)
+        s.add(image)
 
-        # Add all emote parts.
-        for (name, emote) in sorted(emotes.items()):
-            for (specifiers, part) in sorted(emote.parts.items()):
-                specifiers_json = json.dumps(part.serialize_specifiers()) if part.specifiers else None
-                css_json = json.dumps(part.css, sort_keys=True) if part.css else None
+    # Add all emotes (not parts). One big partial commit to get emote ID's.
+    s.begin_nested()
+    emote_rows = {}
+    for (name, emote) in sorted(emotes.items()):
+        e = bpm.database.Emote(stylesheet_id=stylesheet.stylesheet_id, name=name)
+        emote_rows[name] = e
+        s.add(e)
+    s.commit()
 
-                p = bpm.database.EmotePart(
-                    emote_id=emote_rows[name].emote_id,
-                    specifiers=specifiers_json,
-                    animation=part.animation,
-                    css=css_json)
+    # Add all emote parts.
+    for (name, emote) in sorted(emotes.items()):
+        for (specifiers, part) in sorted(emote.parts.items()):
+            specifiers_json = json.dumps(part.serialize_specifiers()) if part.specifiers else None
+            css_json = json.dumps(part.css, sort_keys=True) if part.css else None
 
-                if part.sprite:
-                    p.sprite_image_url = part.sprite.image_url
-                    p.sprite_x = part.sprite.x
-                    p.sprite_y = part.sprite.y
-                    p.sprite_width = part.sprite.width
-                    p.sprite_height = part.sprite.height
+            p = bpm.database.EmotePart(
+                emote_id=emote_rows[name].emote_id,
+                specifiers=specifiers_json,
+                animation=part.animation,
+                css=css_json)
 
-                s.add(p)
+            if part.sprite:
+                p.sprite_image_url = part.sprite.image_url
+                p.sprite_x = part.sprite.x
+                p.sprite_y = part.sprite.y
+                p.sprite_width = part.sprite.width
+                p.sprite_height = part.sprite.height
 
-        # Add update
-        seq = bpm.database.Update.next_update_seq(s, subreddit)
-        update = bpm.database.Update(subreddit_name=args.subreddit, update_seq=seq, stylesheet_id=stylesheet.stylesheet_id, created=now)
+            s.add(p)
 
-        # Partial commit to get update ID
-        s.begin_nested()
-        s.add(update)
-        s.commit()
+    # Add update
+    seq = bpm.database.Update.next_update_seq(s, subreddit)
+    update = bpm.database.Update(subreddit_name=args.subreddit, update_seq=seq, stylesheet_id=stylesheet.stylesheet_id, created=now)
 
-        # Mark this as the latest update.
-        subreddit.latest_update_id = update.update_id
-        s.add(subreddit)
+    # Partial commit to get update ID
+    s.begin_nested()
+    s.add(update)
+    s.commit()
 
-        s.commit()
+    # Mark this as the latest update.
+    subreddit.latest_update_id = update.update_id
+    s.add(subreddit)
+
+    s.commit()
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])

@@ -19,33 +19,16 @@
 ##
 ################################################################################
 
-from setuptools import setup
+import arrow
 
-setup(
-    name="bpm",
-    version="2.0",
-    description="BetterPonymotes",
-    packages=["bpm"],
-    scripts=[
-        "bin/addsubreddit.py",
-        "bin/dlimages.py",
-        "bin/download.py",
-        "bin/initdb.py",
-        "bin/manualupdate.py",
-        "bin/parse.py",
-        "bin/webapi.py"
-    ],
-    install_requires=[
-        "arrow",
-        "cssselect",
-        "Flask",
-        "gunicorn",
-        "Logbook",
-        "Mako",
-        "psycopg2",
-        "PyYAML",
-        "requests",
-        "SQLAlchemy",
-        "tinycss2"
-    ]
-)
+FILE_MAGIC = "rainbow dash is best pony"
+FILE_SCHEMA_VERSION = 1
+
+def build_file(filetype, content):
+    data = {
+        "__betterponymotes_magic": FILE_MAGIC,
+        "__betterponymotes_schema": FILE_SCHEMA_VERSION,
+        "__betterponymotes_filetype": filetype,
+        "__betterponymotes_content": content
+    }
+    return data

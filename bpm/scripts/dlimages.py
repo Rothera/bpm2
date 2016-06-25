@@ -62,19 +62,20 @@ def main(argv0, argv):
             mark_download(s, image)
             continue
 
-        if not args.fix:
-            real_url = bpm.images.image_download_url(image.url)
-            print("Downloading", real_url, "->", path)
+        if args.fix:
+            continue
 
-            r = requests.get(real_url)
+        real_url = bpm.images.image_download_url(image.url)
+        print("Downloading", real_url, "->", path)
 
-            r.raise_for_status()
+        r = requests.get(real_url)
+        r.raise_for_status()
 
-            with open(path, "wb") as file:
-                file.write(r.content)
+        with open(path, "wb") as file:
+            file.write(r.content)
 
-            if not args.n:
-                mark_download(s, image)
+        if not args.n:
+            mark_download(s, image)
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])
