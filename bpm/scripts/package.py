@@ -28,57 +28,15 @@ import yaml
 
 import bpm.database
 from bpm.database import Subreddit
-import bpm.images
 import bpm.json
 import bpm.package
 
-PACKAGE_SCHEMA_VERSION = 1
-
-def pkg_subreddit(sr, ss):
-    emotes = {}
-    images = {}
-
-    for emote in ss.emotes:
-        emote_data = []
-        for part in emote.parts:
-            emote_data.append(part.serialize())
-            if part.sprite_image_url:
-                images[part.sprite_image_url] = None
-        emotes[emote.name] = emote_data
-
-    for image in ss.images:
-        pname = "%%" + image.name + "%%"
-        if pname in images:
-            # Map images to proper download URL's. This rewrites to HTTPS and
-            # also evades Cloudflare, just in case.
-            images[pname] = bpm.images.image_download_url(image.url)
-
-    data = {"emotes": emotes, "images": images}
-    return data
-
-def pkg_metadata(package_config, package_version):
-    m = package_config["Metadata"]
-    timestamp = arrow.utcnow().format("YYYY-MM-DD HH:mm:ss")
-    data = {
-        "name": m["Name"],
-        "version": package_version,
-        "timestamp": timestamp,
-        "description": m["Description"],
-        "repository": m["Repository"]
-    }
-    return data
-
-def build_package(metadata, subreddit_data, emotes, flags, css, svgs):
-    data = {
-        "schema": PACKAGE_SCHEMA_VERSION,
-        "metadata": metadata,
-        "content": subreddit_data,
-        "emotes": emotes,
-        "flags": flags,
-        "css": css,
-        "svgs": svgs
-    }
-    return data
+def lookup_sr(s, name):
+    sr = s.query(Subreddit).get(name)
+    if sr is None:
+        print("Error: could not find /r/%s" % (subreddit_name))
+        sys.exit(1)
+    return sr
 
 def main(argv0, argv):
     parser = argparse.ArgumentParser(prog=argv0, description="Generate package file")
@@ -94,27 +52,28 @@ def main(argv0, argv):
     with open(args.package_yml) as file:
         package_config = yaml.safe_load(file)
 
-    subreddit_data = {} # name -> data
-
-    for subreddit_name in package_config["Subreddits"]:
-        sr = s.query(Subreddit).get(subreddit_name)
-        if sr is None:
-            print("Error: could not find /r/%s" % (subreddit_name))
-            sys.exit(1)
-
+    # Look up all filter subreddits (regardless of whether or not they're
+    # being packaged).
+    filters = {}
+    for name in package_config.get("Filtering", []):
+        sr = lookup_sr(s, name)
         ss = sr.latest_update.stylesheet
-        subreddit_data[subreddit_name] = pkg_subreddit(sr, ss)
+        filters[name] = {emote.name for emote in ss.emotes}
 
-    metadata = pkg_metadata(package_config, args.version)
+    subreddit_data = {} # name -> data
+    for name in package_config["Subreddits"]:
+        sr = lookup_sr(s, name)
+        subreddit_data[name] = bpm.package.pkg_subreddit(package_config, filters, sr)
 
-    emotes = {} # Todo
+    metadata = bpm.package.pkg_metadata(package_config, args.version)
+    emotes = bpm.package.pkg_emotes(package_config, subreddit_data)
 
     # Todo
     flags = None
     css = None
     svgs = None
 
-    content = build_package(metadata, subreddit_data, emotes, flags, css, svgs)
+    content = bpm.package.build_package(metadata, subreddit_data, emotes, flags, css, svgs)
     data = bpm.package.build_file("package", content)
 
     if args.f:
