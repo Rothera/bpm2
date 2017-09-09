@@ -21,8 +21,8 @@
 
 import re
 
-_redditmedia_regexp = re.compile(r"^http://([a-z])\.thumbs\.redditmedia\.com/([a-zA-Z0-9_-]+)\.(png|jpg)$")
-_nohttp_regexp      = re.compile(     r"^//([a-z])\.thumbs\.redditmedia\.com/([a-zA-Z0-9_-]+)\.(png|jpg)$")
+_redditmedia_regexp = re.compile(r"^https?://([a-z])\.thumbs\.redditmedia\.com/([a-zA-Z0-9_-]+)\.(png|jpg)$")
+_nohttp_regexp      = re.compile(       r"^//([a-z])\.thumbs\.redditmedia\.com/([a-zA-Z0-9_-]+)\.(png|jpg)$")
 
 def image_filename(url):
     m = _redditmedia_regexp.match(url)
