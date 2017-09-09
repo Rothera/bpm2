@@ -47,9 +47,9 @@ def main(argv0, argv):
     s = bpm.database.Session()
 
     if args.l:
-        rows = s.query(Image, Subreddit).join(Stylesheet).filter(Image.downloaded == None).order_by(Subreddit.subreddit_name, Image.url).all()
-        for (image, sr) in rows:
-            print("%-25s %s" % (sr.subreddit_name, image.url))
+        rows = s.query(Image, Subreddit, Stylesheet).join(Stylesheet).filter(Image.downloaded == None).order_by(Subreddit.subreddit_name, Image.url).all()
+        for (image, sr, ss) in rows:
+            print("%s  %-25s %s" % (ss.downloaded.format("YYYY-MM-DD"), sr.subreddit_name, image.url))
         return
 
     images = s.query(Image).filter_by(downloaded=None).order_by(Image.image_id).all()
