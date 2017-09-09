@@ -213,15 +213,22 @@ def extract_sprite(name, original_css):
     sprite = Sprite(image_url, x, y, width, height)
     return (sprite, css)
 
-USELESS_PROPERTIES = ["background-repeat", "clear"]
+FILTERED_PROPERTIES = {
+    "background-repeat": None,
+    "clear": None,
+    "cursor": "default"
+    }
 
 def clean_css(css):
     # Remove some commonly added useless properties. (Note: some of these
     # we could consider discarding for non-sprite emotes, but lets go the
     # conservative route here.)
-    for prop in USELESS_PROPERTIES:
+    for (prop, value) in FILTERED_PROPERTIES.items():
         if prop in css:
-            del css[prop]
+            if value is None:
+                del css[prop]
+            elif css[prop] == value:
+                del css[prop]
 
 def _vendors(prop):
     return [prop, "-moz-" + prop, "-webkit-" + prop, "-ms-" + prop, "-o-" + prop]
